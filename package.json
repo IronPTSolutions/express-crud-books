@@ -1,0 +1,22 @@
+{
+  "name": "express-crud-books",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch app.js",
+    "seed": "node bin/seeds.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^8.23.0",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0"
+  }
+}
