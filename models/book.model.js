@@ -34,6 +34,13 @@ const bookSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    // Código ISBN del libro (opcional, único)
+    isbn: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
+    },
   },
   {
     timestamps: true, // Añade automáticamente campos createdAt y updatedAt

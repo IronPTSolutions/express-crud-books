@@ -12,6 +12,9 @@ import "./config/db.config.js";
 // Importación del enrutador principal con todas las rutas de la API
 import router from "./config/routes.config.js";
 
+// Importación del manejador de errores
+import { errorHandler } from "./middlewares/errors.middleware.js";
+
 // Creación de la instancia de Express
 const app = express();
 
@@ -26,6 +29,9 @@ app.use(express.json());
 
 // Montar todas las rutas de la API bajo el prefijo /api
 app.use("/api", router);
+
+// Middleware: Error handler middleware
+app.use(errorHandler);
 
 // Iniciar el servidor y escuchar en el puerto configurado
 app.listen(PORT, () => {

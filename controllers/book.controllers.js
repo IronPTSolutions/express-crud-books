@@ -4,6 +4,7 @@
 // ============================================
 
 import Book from "../models/book.model.js";
+import createError from "http-errors";
 
 /**
  * Listar todos los libros
@@ -22,7 +23,12 @@ export const list = async (req, res) => {
  */
 export const detail = async (req, res) => {
   const book = await Book.findById(req.params.id);
-  res.json(book);
+
+  if (book === null) {
+    throw createError(404, "Book not found");
+  } else {
+    res.json(req.book);
+  }
 };
 
 /**
@@ -48,7 +54,11 @@ export const update = async (req, res) => {
     runValidators: true, // Ejecuta las validaciones del esquema al actualizar
   });
 
-  res.json(book);
+  if (book == null) {
+    res.status(404).json({ error: "Book not found" });
+  } else {
+    res.json(book);
+  }
 };
 
 /**
@@ -57,6 +67,11 @@ export const update = async (req, res) => {
  * Devuelve código de estado 204 (Sin contenido) tras la eliminación exitosa
  */
 export const remove = async (req, res) => {
-  await Book.findByIdAndDelete(req.params.id);
-  res.status(204).end();
+  const book = await Book.findByIdAndDelete(req.params.id);
+
+  if (book == null) {
+    res.status(404).json({ error: "Book not found" });
+  } else {
+    res.status(204).end();
+  }
 };
