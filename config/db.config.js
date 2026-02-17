@@ -5,8 +5,12 @@
 import mongoose from "mongoose";
 
 // URI de conexión: usa variable de entorno o conexión local por defecto
-const MONGODB_URI =
+let MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/booksdb";
+
+if (process.env.NODE_ENV === "test") {
+  MONGODB_URI += "_test";
+}
 
 // Conexión a MongoDB usando Mongoose
 mongoose

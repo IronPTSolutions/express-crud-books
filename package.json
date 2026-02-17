@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch app.js",
-    "seed": "node bin/seeds.js"
+    "seed": "node bin/seeds.js",
+    "test": "cross-env NODE_ENV=test vitest run",
+    "test:coverage": "cross-env NODE_ENV=test vitest run --coverage"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +20,10 @@
     "morgan": "^1.10.1"
   },
   "devDependencies": {
-    "@faker-js/faker": "^9.9.0"
+    "@faker-js/faker": "^9.9.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "cross-env": "^10.1.0",
+    "supertest": "^7.2.2",
+    "vitest": "^4.0.18"
   }
 }

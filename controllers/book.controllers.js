@@ -12,7 +12,7 @@ import createError from "http-errors";
  * Devuelve un array JSON con todos los libros de la base de datos
  */
 export const list = async (req, res) => {
-  const books = await Book.find();
+  const books = await Book.find().populate("user");
   res.json(books);
 };
 
@@ -22,12 +22,12 @@ export const list = async (req, res) => {
  * Devuelve un objeto JSON con los datos del libro solicitado
  */
 export const detail = async (req, res) => {
-  const book = await Book.findById(req.params.id);
+  const book = await Book.findById(req.params.id).populate("user");
 
   if (book === null) {
     throw createError(404, "Book not found");
   } else {
-    res.json(req.book);
+    res.json(book);
   }
 };
 
@@ -55,10 +55,10 @@ export const update = async (req, res) => {
   });
 
   if (book == null) {
-    res.status(404).json({ error: "Book not found" });
-  } else {
-    res.json(book);
+    throw createError(404, "Book not found");
   }
+
+  res.json(book);
 };
 
 /**
