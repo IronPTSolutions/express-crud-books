@@ -25,8 +25,11 @@ router.delete("/books/:id", books.remove); // Eliminar un libro por ID
 
 router.get("/users", users.list); // Listar todos los usuarios
 router.post("/users", users.create); // Crear un nuevo usuario
+router.get("/users/profile", users.profile);
 router.get("/users/:id", users.detail); // Obtener detalle de un usuario por ID
 router.patch("/users/:id", users.update); // Actualizar parcialmente un usuario por ID
+router.delete("/users/logout", users.logout);
+router.delete("/users/logout-all", users.logoutAll);
 router.delete("/users/:id", users.remove); // Eliminar un usuario por ID
 router.post("/users/login", users.login);
 

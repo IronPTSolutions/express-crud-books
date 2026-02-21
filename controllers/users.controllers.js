@@ -112,3 +112,19 @@ export const login = async (req, res) => {
 
   res.end();
 };
+
+export const profile = async (req, res) => {
+  res.json(req.session.user);
+};
+
+export const logout = async (req, res) => {
+  await Session.findByIdAndDelete(req.session.id);
+
+  res.status(204).end();
+};
+
+export const logoutAll = async (req, res) => {
+  await Session.deleteMany({ user: req.session.user.id });
+
+  res.status(204).end();
+};
