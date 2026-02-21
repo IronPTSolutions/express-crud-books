@@ -4,8 +4,8 @@
 // ============================================
 
 import User from "../models/user.model.js";
+import Session from "../models/session.model.js";
 import createError from "http-errors";
-import bcrypt from "bcrypt";
 
 /**
  * Listar todos los usuarios
@@ -82,4 +82,33 @@ export const remove = async (req, res) => {
   } else {
     res.status(204).end();
   }
+};
+
+export const login = async (req, res) => {
+  if (!req.body.password || !req.body.email) {
+    throw createError(400, "missing mail or password");
+  }
+
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    throw createError(401, "unauthorized");
+  }
+
+  const match = await user.checkPassword(req.body.password);
+
+  if (!match) {
+    throw createError(401, "unauthorized");
+  }
+
+  const session = await Session.create({
+    user: user._id,
+  });
+
+  res.cookie("sessionId", session._id.toString(), {
+    httpOnly: true, // La cookie no es accesible desde JavaScript del lado del cliente
+    secure: process.env.NODE_ENV === "production", // Solo se envía en conexiones HTTPS en producción
+  });
+
+  res.end();
 };

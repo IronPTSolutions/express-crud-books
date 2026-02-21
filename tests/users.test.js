@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import request from "supertest";
 import app from "../app.js";
 import User from "../models/user.model.js";
@@ -478,6 +478,50 @@ describe("API de Users - CRUD completo", () => {
 
       // 5. Verificar que ya no existe
       await request(app).get(`/api/users/${userId}`).expect(404);
+    });
+  });
+
+  describe("User login", () => {
+    beforeAll(async () => {
+      await User.create({
+        email: "juan1@example.com",
+        password: "password123",
+        fullName: "Juan Pérez",
+        bio: "Desarrollador de software",
+        birthDate: "1990-05-15",
+      });
+    });
+
+    it("happy case", async () => {
+      const response = await request(app)
+        .post("/api/users/login")
+        .send({
+          email: "juan1@example.com",
+          password: "password123",
+        })
+        .expect(200);
+
+      expect(response.headers["set-cookie"]).toBeDefined();
+    });
+
+    it("401 if user does not exist", async () => {
+      await request(app)
+        .post("/api/users/login")
+        .send({
+          email: "juanDoesNotExist@example.com",
+          password: "password123",
+        })
+        .expect(401);
+    });
+
+    it("401 if wrong password", async () => {
+      await request(app)
+        .post("/api/users/login")
+        .send({
+          email: "juan1@example.com",
+          password: "WRONG",
+        })
+        .expect(401);
     });
   });
 });

@@ -28,6 +28,7 @@ router.post("/users", users.create); // Crear un nuevo usuario
 router.get("/users/:id", users.detail); // Obtener detalle de un usuario por ID
 router.patch("/users/:id", users.update); // Actualizar parcialmente un usuario por ID
 router.delete("/users/:id", users.remove); // Eliminar un usuario por ID
+router.post("/users/login", users.login);
 
 // Middleware "catch-all" para rutas no definidas
 // Si ninguna ruta anterior coincide con la petición,

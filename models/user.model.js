@@ -74,6 +74,10 @@ userSchema.pre("save", async function (next) {
   next(); // Continúa con la operación de guardado
 });
 
+userSchema.methods.checkPassword = function (passwordToCheck) {
+  return bcrypt.compare(passwordToCheck, this.password);
+};
+
 // Creación del modelo "User" a partir del esquema definido
 const User = mongoose.model("User", userSchema);
 
