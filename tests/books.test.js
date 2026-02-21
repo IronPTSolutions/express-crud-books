@@ -30,10 +30,10 @@ describe("API de Books - CRUD completo", () => {
       expect(response.body.title).toBe("Cien años de soledad");
       expect(response.body.author).toBe("Gabriel García Márquez");
       expect(response.body.publishedYear).toBe(1967);
-      expect(response.body._id).toBeDefined();
+      expect(response.body.id).toBeDefined();
 
       // Verificamos que realmente se guardó en la BDD
-      const bookInDB = await Book.findById(response.body._id);
+      const bookInDB = await Book.findById(response.body.id);
       expect(bookInDB).not.toBeNull();
       expect(bookInDB.title).toBe("Cien años de soledad");
     });
@@ -105,7 +105,7 @@ describe("API de Books - CRUD completo", () => {
       });
 
       const response = await request(app)
-        .get(`/api/books/${book._id}`)
+        .get(`/api/books/${book.id}`)
         .expect(200);
 
       expect(response.body.title).toBe("1984");
@@ -224,7 +224,7 @@ describe("API de Books - CRUD completo", () => {
         })
         .expect(201);
 
-      const bookId = createRes.body._id;
+      const bookId = createRes.body.id;
 
       // 2. READ - Verificar que existe
       const readRes = await request(app)

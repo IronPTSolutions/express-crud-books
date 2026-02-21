@@ -5,9 +5,12 @@
 import mongoose from "mongoose";
 
 // URI de conexión: usa variable de entorno o conexión local por defecto
+// Se usa "let" en lugar de "const" porque el URI puede modificarse para tests
 let MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/booksdb";
 
+// En entorno de test se usa una base de datos separada (booksdb_test)
+// para no afectar los datos de desarrollo durante la ejecución de tests
 if (process.env.NODE_ENV === "test") {
   MONGODB_URI += "_test";
 }

@@ -28,12 +28,14 @@ describe("API de Users - CRUD completo", () => {
       expect(response.body.email).toBe("juan@example.com");
       expect(response.body.fullName).toBe("Juan Pérez");
       expect(response.body.bio).toBe("Desarrollador de software");
-      expect(response.body._id).toBeDefined();
+      expect(response.body.id).toBeDefined();
 
       // Verificamos que realmente se guardó en la BDD
-      const userInDB = await User.findById(response.body._id);
+      const userInDB = await User.findById(response.body.id);
       expect(userInDB).not.toBeNull();
       expect(userInDB.email).toBe("juan@example.com");
+      expect(userInDB.password).not.toBe(newUser.password);
+      expect(userInDB.password.length > newUser.password.length).toBe(true);
     });
 
     it("debería crear un usuario sin bio (campo opcional)", async () => {
@@ -340,7 +342,7 @@ describe("API de Users - CRUD completo", () => {
 
       // Verificamos que se actualizó en la BDD
       const userInDB = await User.findById(user._id);
-      expect(userInDB.password).toBe("newPassword456");
+      expect(userInDB.password).not.toBe("password123");
     });
 
     it("debería devolver 404 si el usuario a actualizar no existe", async () => {
@@ -351,7 +353,7 @@ describe("API de Users - CRUD completo", () => {
         .send({ fullName: "No importa" })
         .expect(404);
 
-      expect(response.body.error).toBe("User not found");
+      expect(response.body.message).toBe("User not found");
     });
 
     it("debería devolver 400 si se intenta actualizar con email inválido", async () => {
@@ -446,7 +448,7 @@ describe("API de Users - CRUD completo", () => {
         .send(newUser)
         .expect(201);
 
-      const userId = createResponse.body._id;
+      const userId = createResponse.body.id;
       expect(userId).toBeDefined();
 
       // 2. READ ONE

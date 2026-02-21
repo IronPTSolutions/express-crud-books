@@ -34,10 +34,14 @@ app.use("/api", router);
 app.use(errorHandler);
 
 // Iniciar el servidor y escuchar en el puerto configurado
+// En entorno de test no se levanta el servidor para evitar conflictos de puertos
+// y permitir que los tests controlen el ciclo de vida del servidor
 if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
+// Se exporta la instancia de app para poder usarla en los tests
+// (por ejemplo, con supertest para hacer peticiones HTTP de prueba)
 export default app;

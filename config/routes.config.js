@@ -5,7 +5,9 @@
 
 import { Router } from "express";
 import * as books from "../controllers/book.controllers.js";
+// Importación de los controladores de usuarios para manejar las peticiones CRUD
 import * as users from "../controllers/users.controllers.js";
+// Librería para crear errores HTTP estandarizados con código de estado
 import createHttpError from "http-errors";
 
 // Creación del enrutador de Express

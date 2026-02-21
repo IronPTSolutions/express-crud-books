@@ -12,6 +12,8 @@ import createError from "http-errors";
  * Devuelve un array JSON con todos los libros de la base de datos
  */
 export const list = async (req, res) => {
+  // .populate("user") resuelve la referencia ObjectId del campo "user"
+  // e incluye los datos completos del usuario propietario en cada libro
   const books = await Book.find().populate("user");
   res.json(books);
 };
@@ -22,6 +24,7 @@ export const list = async (req, res) => {
  * Devuelve un objeto JSON con los datos del libro solicitado
  */
 export const detail = async (req, res) => {
+  // .populate("user") incluye los datos del usuario asociado al libro
   const book = await Book.findById(req.params.id).populate("user");
 
   if (book === null) {
