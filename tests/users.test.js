@@ -2,8 +2,22 @@ import { describe, it, expect, beforeAll } from "vitest";
 import request from "supertest";
 import app from "../app.js";
 import User from "../models/user.model.js";
+import Session from "../models/session.model.js";
 
 describe("API de Users - CRUD completo", () => {
+  let cookies;
+
+  beforeAll(async () => {
+    const user = await User.create({
+      email: "auth@tests.com",
+      password: "password123",
+      fullName: "Auth User",
+      birthDate: "1990-01-01",
+    });
+    const session = await Session.create({ user: user._id });
+    cookies = [`sessionId=${session._id.toString()}`];
+  });
+
   // ============================================
   // CREATE - POST /api/users
   // ============================================
@@ -207,7 +221,10 @@ describe("API de Users - CRUD completo", () => {
     it("debería devolver un array vacío si no hay usuarios", async () => {
       await User.deleteMany();
 
-      const response = await request(app).get("/api/users").expect(200);
+      const response = await request(app)
+        .get("/api/users")
+        .set("Cookie", cookies)
+        .expect(200);
 
       expect(response.body).toEqual([]);
     });
@@ -233,7 +250,10 @@ describe("API de Users - CRUD completo", () => {
         birthDate: "1992-03-03",
       });
 
-      const response = await request(app).get("/api/users").expect(200);
+      const response = await request(app)
+        .get("/api/users")
+        .set("Cookie", cookies)
+        .expect(200);
 
       expect(response.body).toHaveLength(3);
       expect(response.body[0].email).toBe("user1@example.com");
@@ -256,6 +276,7 @@ describe("API de Users - CRUD completo", () => {
 
       const response = await request(app)
         .get(`/api/users/${user._id}`)
+        .set("Cookie", cookies)
         .expect(200);
 
       expect(response.body.email).toBe("detail@example.com");
@@ -273,6 +294,7 @@ describe("API de Users - CRUD completo", () => {
 
       const response = await request(app)
         .get(`/api/users/${user._id}`)
+        .set("Cookie", cookies)
         .expect(200);
 
       expect(response.body.books).toBeDefined();
@@ -284,6 +306,7 @@ describe("API de Users - CRUD completo", () => {
 
       const response = await request(app)
         .get(`/api/users/${fakeId}`)
+        .set("Cookie", cookies)
         .expect(404);
 
       expect(response.body.message).toBe("User not found");
@@ -310,6 +333,7 @@ describe("API de Users - CRUD completo", () => {
 
       const response = await request(app)
         .patch(`/api/users/${user._id}`)
+        .set("Cookie", cookies)
         .send(updatedData)
         .expect(200);
 
@@ -337,6 +361,7 @@ describe("API de Users - CRUD completo", () => {
 
       const response = await request(app)
         .patch(`/api/users/${user._id}`)
+        .set("Cookie", cookies)
         .send(updatedData)
         .expect(200);
 
@@ -350,6 +375,7 @@ describe("API de Users - CRUD completo", () => {
 
       const response = await request(app)
         .patch(`/api/users/${fakeId}`)
+        .set("Cookie", cookies)
         .send({ fullName: "No importa" })
         .expect(404);
 
@@ -370,6 +396,7 @@ describe("API de Users - CRUD completo", () => {
 
       const response = await request(app)
         .patch(`/api/users/${user._id}`)
+        .set("Cookie", cookies)
         .send(updatedData)
         .expect(400);
 
@@ -390,6 +417,7 @@ describe("API de Users - CRUD completo", () => {
 
       const response = await request(app)
         .patch(`/api/users/${user._id}`)
+        .set("Cookie", cookies)
         .send(updatedData)
         .expect(400);
 
@@ -411,7 +439,10 @@ describe("API de Users - CRUD completo", () => {
         birthDate: "1990-01-01",
       });
 
-      await request(app).delete(`/api/users/${user._id}`).expect(204); // 204 No Content
+      await request(app)
+        .delete(`/api/users/${user._id}`)
+        .set("Cookie", cookies)
+        .expect(204); // 204 No Content
 
       // Verificamos que realmente se eliminó de la BDD
       const userInDB = await User.findById(user._id);
@@ -423,6 +454,7 @@ describe("API de Users - CRUD completo", () => {
 
       const response = await request(app)
         .delete(`/api/users/${fakeId}`)
+        .set("Cookie", cookies)
         .expect(404);
 
       expect(response.body.error).toBe("User not found");
@@ -454,6 +486,7 @@ describe("API de Users - CRUD completo", () => {
       // 2. READ ONE
       const readResponse = await request(app)
         .get(`/api/users/${userId}`)
+        .set("Cookie", cookies)
         .expect(200);
 
       expect(readResponse.body.email).toBe("flujo@example.com");
@@ -467,6 +500,7 @@ describe("API de Users - CRUD completo", () => {
 
       const updateResponse = await request(app)
         .patch(`/api/users/${userId}`)
+        .set("Cookie", cookies)
         .send(updateData)
         .expect(200);
 
@@ -474,10 +508,16 @@ describe("API de Users - CRUD completo", () => {
       expect(updateResponse.body.bio).toBe("Biografía actualizada");
 
       // 4. DELETE
-      await request(app).delete(`/api/users/${userId}`).expect(204);
+      await request(app)
+        .delete(`/api/users/${userId}`)
+        .set("Cookie", cookies)
+        .expect(204);
 
       // 5. Verificar que ya no existe
-      await request(app).get(`/api/users/${userId}`).expect(404);
+      await request(app)
+        .get(`/api/users/${userId}`)
+        .set("Cookie", cookies)
+        .expect(404);
     });
   });
 
@@ -522,6 +562,25 @@ describe("API de Users - CRUD completo", () => {
           password: "WRONG",
         })
         .expect(401);
+    });
+
+    it("GET user profile", async () => {
+      const response = await request(app)
+        .post("/api/users/login")
+        .send({
+          email: "juan1@example.com",
+          password: "password123",
+        })
+        .expect(200);
+
+      const loginCookies = response.headers["set-cookie"];
+
+      const profileResponse = await request(app)
+        .get("/api/users/profile")
+        .set("Cookie", loginCookies)
+        .expect(200);
+
+      expect(profileResponse.body.email).toBe("juan1@example.com");
     });
   });
 });

@@ -1,9 +1,24 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import request from "supertest";
 import app from "../app.js";
 import Book from "../models/book.model.js";
+import User from "../models/user.model.js";
+import Session from "../models/session.model.js";
 
 describe("API de Books - CRUD completo", () => {
+  let cookies;
+
+  beforeAll(async () => {
+    const user = await User.create({
+      email: "auth@books.com",
+      password: "password123",
+      fullName: "Auth User",
+      birthDate: "1990-01-01",
+    });
+    const session = await Session.create({ user: user._id });
+    cookies = [`sessionId=${session._id.toString()}`];
+  });
+
   // ============================================
   // CREATE - POST /api/books
   // ============================================
@@ -22,6 +37,7 @@ describe("API de Books - CRUD completo", () => {
       // When
       const response = await request(app)
         .post("/api/books")
+        .set("Cookie", cookies)
         .send(newBook)
         .expect(201);
 
@@ -45,6 +61,7 @@ describe("API de Books - CRUD completo", () => {
 
       const response = await request(app)
         .post("/api/books")
+        .set("Cookie", cookies)
         .send(badBook)
         .expect(400);
 
@@ -58,6 +75,7 @@ describe("API de Books - CRUD completo", () => {
 
       const response = await request(app)
         .post("/api/books")
+        .set("Cookie", cookies)
         .send(badBook)
         .expect(400);
 
@@ -72,7 +90,10 @@ describe("API de Books - CRUD completo", () => {
     it("debería devolver un array vacío si no hay libros", async () => {
       await Book.deleteMany();
 
-      const response = await request(app).get("/api/books").expect(200);
+      const response = await request(app)
+        .get("/api/books")
+        .set("Cookie", cookies)
+        .expect(200);
 
       expect(response.body).toEqual([]);
     });
@@ -83,7 +104,10 @@ describe("API de Books - CRUD completo", () => {
       await Book.create({ title: "Libro 2", author: "Autor 2", isbn: "2" });
       await Book.create({ title: "Libro 3", author: "Autor 3", isbn: "3" });
 
-      const response = await request(app).get("/api/books").expect(200);
+      const response = await request(app)
+        .get("/api/books")
+        .set("Cookie", cookies)
+        .expect(200);
 
       expect(response.body).toHaveLength(3);
       expect(response.body[0].title).toBe("Libro 1");
@@ -106,6 +130,7 @@ describe("API de Books - CRUD completo", () => {
 
       const response = await request(app)
         .get(`/api/books/${book.id}`)
+        .set("Cookie", cookies)
         .expect(200);
 
       expect(response.body.title).toBe("1984");
@@ -117,6 +142,7 @@ describe("API de Books - CRUD completo", () => {
 
       const response = await request(app)
         .get(`/api/books/${fakeId}`)
+        .set("Cookie", cookies)
         .expect(404);
 
       expect(response.body.message).toBe("Book not found");
@@ -127,6 +153,7 @@ describe("API de Books - CRUD completo", () => {
 
       const response = await request(app)
         .get(`/api/books/${fakeId}`)
+        .set("Cookie", cookies)
         .expect(404);
 
       expect(response.body.message).toBe("Resource not found");
@@ -152,6 +179,7 @@ describe("API de Books - CRUD completo", () => {
 
       const response = await request(app)
         .patch(`/api/books/${book._id}`)
+        .set("Cookie", cookies)
         .send(updatedData)
         .expect(200);
 
@@ -170,6 +198,7 @@ describe("API de Books - CRUD completo", () => {
 
       const response = await request(app)
         .patch(`/api/books/${fakeId}`)
+        .set("Cookie", cookies)
         .send({ title: "No importa" })
         .expect(404);
 
@@ -188,7 +217,10 @@ describe("API de Books - CRUD completo", () => {
         isbn: "1",
       });
 
-      await request(app).delete(`/api/books/${book._id}`).expect(204); // 204 No Content
+      await request(app)
+        .delete(`/api/books/${book._id}`)
+        .set("Cookie", cookies)
+        .expect(204); // 204 No Content
 
       // Verificamos que realmente se eliminó de la BDD
       const bookInDB = await Book.findById(book._id);
@@ -200,6 +232,7 @@ describe("API de Books - CRUD completo", () => {
 
       const response = await request(app)
         .delete(`/api/books/${fakeId}`)
+        .set("Cookie", cookies)
         .expect(404);
 
       expect(response.body.error).toBe("Book not found");
@@ -214,6 +247,7 @@ describe("API de Books - CRUD completo", () => {
       // 1. CREATE
       const createRes = await request(app)
         .post("/api/books")
+        .set("Cookie", cookies)
         .send({
           title: "Test Book",
           author: "Test Author",
@@ -229,6 +263,7 @@ describe("API de Books - CRUD completo", () => {
       // 2. READ - Verificar que existe
       const readRes = await request(app)
         .get(`/api/books/${bookId}`)
+        .set("Cookie", cookies)
         .expect(200);
 
       expect(readRes.body.title).toBe("Test Book");
@@ -236,6 +271,7 @@ describe("API de Books - CRUD completo", () => {
       // 3. UPDATE (PATCH)
       const updateRes = await request(app)
         .patch(`/api/books/${bookId}`)
+        .set("Cookie", cookies)
         .send({ title: "Updated Book" })
         .expect(200);
 
@@ -243,15 +279,24 @@ describe("API de Books - CRUD completo", () => {
       expect(updateRes.body.author).toBe("Test Author"); // No debe cambiar
 
       // 4. DELETE
-      await request(app).delete(`/api/books/${bookId}`).expect(204);
+      await request(app)
+        .delete(`/api/books/${bookId}`)
+        .set("Cookie", cookies)
+        .expect(204);
 
       // 5. Verificar que ya no existe
-      await request(app).get(`/api/books/${bookId}`).expect(404);
+      await request(app)
+        .get(`/api/books/${bookId}`)
+        .set("Cookie", cookies)
+        .expect(404);
     });
   });
 
   it("Generic 404", async () => {
-    const response = await request(app).get("/api/lalala").expect(404);
+    const response = await request(app)
+      .get("/api/lalala")
+      .set("Cookie", cookies)
+      .expect(404);
 
     expect(response.body.message).toBe("Route Not Found");
   });

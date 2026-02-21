@@ -14,6 +14,8 @@ import router from "./config/routes.config.js";
 
 // Importación del manejador de errores
 import { errorHandler } from "./middlewares/errors.middleware.js";
+// Importación del middleware de autenticación
+import { checkAuth } from "./middlewares/auth.middleware.js";
 
 // Creación de la instancia de Express
 const app = express();
@@ -26,6 +28,9 @@ app.use(morgan("dev"));
 
 // Middleware: permite recibir y parsear cuerpos de petición en formato JSON
 app.use(express.json());
+
+// Middleware: verificación de autenticación mediante sesiones (cookie sessionId)
+app.use(checkAuth);
 
 // Montar todas las rutas de la API bajo el prefijo /api
 app.use("/api", router);

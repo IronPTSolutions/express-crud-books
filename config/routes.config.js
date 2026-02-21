@@ -25,10 +25,13 @@ router.delete("/books/:id", books.remove); // Eliminar un libro por ID
 
 router.get("/users", users.list); // Listar todos los usuarios
 router.post("/users", users.create); // Crear un nuevo usuario
+router.get("/users/profile", users.profile); // Obtener perfil del usuario autenticado
 router.get("/users/:id", users.detail); // Obtener detalle de un usuario por ID
 router.patch("/users/:id", users.update); // Actualizar parcialmente un usuario por ID
+router.delete("/users/logout", users.logout); // Cerrar la sesión actual
+router.delete("/users/logout-all", users.logoutAll); // Cerrar todas las sesiones del usuario
 router.delete("/users/:id", users.remove); // Eliminar un usuario por ID
-router.post("/users/login", users.login);
+router.post("/users/login", users.login); // Iniciar sesión
 
 // Middleware "catch-all" para rutas no definidas
 // Si ninguna ruta anterior coincide con la petición,
