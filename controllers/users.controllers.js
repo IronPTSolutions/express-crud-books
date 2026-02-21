@@ -84,27 +84,37 @@ export const remove = async (req, res) => {
   }
 };
 
+/**
+ * Iniciar sesión de un usuario
+ * POST /api/users/login
+ * Verifica las credenciales y crea una sesión con cookie httpOnly
+ */
 export const login = async (req, res) => {
+  // Validar que se envíen ambos campos obligatorios
   if (!req.body.password || !req.body.email) {
     throw createError(400, "missing mail or password");
   }
 
+  // Buscar al usuario por email
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
     throw createError(401, "unauthorized");
   }
 
+  // Comparar la contraseña enviada con el hash almacenado
   const match = await user.checkPassword(req.body.password);
 
   if (!match) {
     throw createError(401, "unauthorized");
   }
 
+  // Crear una nueva sesión asociada al usuario
   const session = await Session.create({
     user: user._id,
   });
 
+  // Establecer la cookie de sesión en la respuesta
   res.cookie("sessionId", session._id.toString(), {
     httpOnly: true, // La cookie no es accesible desde JavaScript del lado del cliente
     secure: process.env.NODE_ENV === "production", // Solo se envía en conexiones HTTPS en producción
@@ -113,16 +123,31 @@ export const login = async (req, res) => {
   res.end();
 };
 
+/**
+ * Obtener el perfil del usuario autenticado
+ * GET /api/users/profile
+ * Devuelve los datos del usuario asociado a la sesión actual
+ */
 export const profile = async (req, res) => {
   res.json(req.session.user);
 };
 
+/**
+ * Cerrar la sesión actual del usuario
+ * DELETE /api/users/logout
+ * Elimina la sesión actual de la base de datos
+ */
 export const logout = async (req, res) => {
   await Session.findByIdAndDelete(req.session.id);
 
   res.status(204).end();
 };
 
+/**
+ * Cerrar todas las sesiones del usuario
+ * DELETE /api/users/logout-all
+ * Elimina todas las sesiones asociadas al usuario autenticado
+ */
 export const logoutAll = async (req, res) => {
   await Session.deleteMany({ user: req.session.user.id });
 
